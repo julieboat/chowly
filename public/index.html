@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chowly | Fine Digital Dining</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Header & Role Switcher -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-badge">🍽️</div>
+        <div>
+          <h1 class="brand-title">Chowly</h1>
+          <span class="brand-subtitle">Smart Restaurant Guide</span>
+        </div>
+      </div>
+
+      <nav class="role-nav">
+        <button id="btnRoleCustomer" class="role-pill active" onclick="switchRole('customer')">
+          <span>👤</span> Customer Dining
+        </button>
+        <button id="btnRoleWaiter" class="role-pill" onclick="switchRole('waiter')">
+          <span>🧑‍🍳</span> Waiter Station
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- ================= CUSTOMER VIEW ================= -->
+    <section id="customerView" class="view-panel">
+      <!-- Welcome Hero -->
+      <div class="hero-banner">
+        <div class="hero-text">
+          <span class="tagline">Welcome to the digital dining table</span>
+          <h2>Order Your Meal in Real Time</h2>
+          <p>Explore chef-crafted dishes, track kitchen preparation times, and check out effortlessly.</p>
+        </div>
+        <div class="table-session-box">
+          <div class="session-header">
+            <span class="dot-indicator"></span> Your Table Session
+          </div>
+          <div class="session-inputs">
+            <div class="input-field">
+              <label for="custName">Your Name</label>
+              <input type="text" id="custName" placeholder="e.g. Juliet" autocomplete="off" />
+            </div>
+            <div class="input-field">
+              <label for="custSeat">Seat / Table #</label>
+              <input type="number" id="custSeat" placeholder="e.g. 14" min="1" max="60" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs for Customer View -->
+      <div class="customer-tabs">
+        <button id="tabBtnMenu" class="cust-tab active" onclick="switchCustomerTab('menu')">
+          📋 Browse Menu & Order
+        </button>
+        <button id="tabBtnTracker" class="cust-tab" onclick="switchCustomerTab('tracker')">
+          ⏱️ Live Order Tracker & Receipts <span id="activeOrderBadge" class="order-counter-badge hidden">0</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: MENU & CART -->
+      <div id="tabContentMenu" class="tab-pane active">
+        <div class="catalog-layout">
+          <!-- Food & Drinks Column -->
+          <div class="menu-column">
+            <!-- Search & Filters -->
+            <div class="filter-toolbar">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="menuSearchInput" placeholder="Search jollof, soup, drinks..." oninput="handleMenuSearch()" />
+              </div>
+              <div class="category-pills">
+                <button class="pill active" onclick="filterMenu('all', this)">All Items</button>
+                <button class="pill" onclick="filterMenu('food', this)">🍲 Main Dishes</button>
+                <button class="pill" onclick="filterMenu('drink', this)">🍹 Refreshments</button>
+              </div>
+            </div>
+
+            <!-- Menu Cards Grid -->
+            <div id="menuCardsGrid" class="cards-grid"></div>
+          </div>
+
+          <!-- Sticky Tray / Cart -->
+          <aside class="cart-column">
+            <div class="sticky-cart-card">
+              <div class="cart-header">
+                <h3>Order Tray</h3>
+                <span id="cartCountTag" class="count-tag">0 items</span>
+              </div>
+
+              <div id="cartItemsList" class="cart-scroll-area">
+                <div class="cart-empty-placeholder">
+                  <span class="empty-icon">🛒</span>
+                  <p>Your tray is empty.</p>
+                  <small>Pick items from the menu to build your feast.</small>
+                </div>
+              </div>
+
+              <div class="cart-footer">
+                <div class="cart-metric">
+                  <span class="metric-label">Estimated Kitchen Wait:</span>
+                  <span id="cartWaitDisplay" class="metric-value">~0 mins</span>
+                </div>
+                <div class="cart-metric total-row">
+                  <span class="metric-label">Total Amount:</span>
+                  <span id="cartTotalDisplay" class="metric-value">₦0.00</span>
+                </div>
+                <button id="btnOrderSubmit" class="btn-primary full-btn" onclick="submitCustomerOrder()">
+                  Send Order to Kitchen ➔
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- TAB 2: LIVE TRACKER & ORDERS HISTORY -->
+      <div id="tabContentTracker" class="tab-pane">
+        <div class="tracker-header">
+          <div>
+            <h3>Active Orders & Table Status</h3>
+            <p>Track your food through kitchen preparation, report delays, and complete pretend payment.</p>
+          </div>
+          <button id="btnRefreshTimeline" class="btn-ghost" onclick="manualRefreshTimeline()">🔄 Refresh Timeline</button>
+        </div>
+
+        <div id="customerOrdersFeed" class="orders-feed"></div>
+      </div>
+    </section>
+
+    <!-- ================= WAITER VIEW ================= -->
+    <section id="waiterView" class="view-panel hidden">
+      <div class="waiter-top-bar">
+        <div>
+          <h2>Service Dispatch Station</h2>
+          <p>Assign preparing Chefs and Bartenders to orders and mark dishes as served to tables.</p>
+        </div>
+        <button id="btnRefreshQueue" class="btn-ghost" onclick="manualRefreshQueue()">🔄 Refresh Kitchen Queue</button>
+      </div>
+
+      <div id="waiterOrdersQueue" class="waiter-queue-grid"></div>
+    </section>
+  </main>
+
+  <!-- MODAL: DELAY COMPLAINT & RATING -->
+  <div id="complaintModal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <div class="modal-badge warning">⚠️ Service Feedback</div>
+      <h3>Report Delay or Complaint</h3>
+      <p class="modal-desc">Tell us about your order experience and rate how our staff handled your table.</p>
+
+      <input type="hidden" id="modalOrderId" />
+
+      <div class="form-control">
+        <label>Service Rating</label>
+        <select id="modalRating">
+          <option value="5">⭐⭐⭐⭐⭐ 5 - Perfectly On-Time</option>
+          <option value="4">⭐⭐⭐⭐ 4 - Good Experience</option>
+          <option value="3">⭐⭐⭐ 3 - Acceptable</option>
+          <option value="2">⭐⭐ 2 - Noticeable Delay</option>
+          <option value="1">⭐ 1 - Serious Kitchen Delay</option>
+        </select>
+      </div>
+
+      <div class="form-control">
+        <label>Complaint / Delay Details</label>
+        <textarea id="modalComplaintText" rows="3" placeholder="Please describe what caused the dissatisfaction..."></textarea>
+      </div>
+
+      <div class="modal-btn-row">
+        <button class="btn-secondary" onclick="closeModal('complaintModal')">Cancel</button>
+        <button class="btn-primary" onclick="submitCustomerFeedback()">Record Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRETEND PAYMENT & PRINTABLE RECEIPT -->
+  <div id="receiptModal" class="modal-backdrop hidden">
+    <div class="modal-box receipt-mode">
+      <div class="simulation-banner">
+        ⚠️ RESTAURANT SYSTEM SIMULATION • NO REAL MONEY CHARGED
+      </div>
+
+      <div class="receipt-paper">
+        <div class="receipt-header">
+          <h2>CHOWLY RESTAURANT</h2>
+          <p>Official Dining Bill & Guest Receipt</p>
+          <div class="receipt-divider"></div>
+        </div>
+
+        <div class="receipt-meta">
+          <div><strong>Order #:</strong> <span id="recOrderId">-</span></div>
+          <div><strong>Guest:</strong> <span id="recCustomer">-</span></div>
+          <div><strong>Seat / Table:</strong> <span id="recSeat">-</span></div>
+          <div><strong>Status:</strong> <span id="recStatus">-</span></div>
+          <div><strong>Server:</strong> <span id="recWaiter">-</span></div>
+          <div><strong>Chef:</strong> <span id="recChef">-</span></div>
+        </div>
+
+        <div class="receipt-divider"></div>
+        <div id="recItemsList" class="receipt-items-list"></div>
+        <div class="receipt-divider"></div>
+
+        <div class="receipt-calc">
+          <div class="calc-row"><span>Subtotal:</span><span id="recSubtotal">₦0.00</span></div>
+          <div class="calc-row"><span>VAT (Simulated 0%):</span><span>₦0.00</span></div>
+          <div class="calc-row total-bold"><span>Total Due:</span><span id="recTotal">₦0.00</span></div>
+        </div>
+
+        <div class="pretend-stamp">PRETEND PAYMENT</div>
+      </div>
+
+      <div class="modal-btn-row">
+        <button class="btn-secondary" onclick="closeModal('receiptModal')">Close</button>
+        <button id="btnPayAction" class="btn-success" onclick="confirmPretendPayment()">
+          💳 Process Pretend Payment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
