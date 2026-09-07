@@ -427,6 +427,16 @@ async function loadWaiterOrders() {
         ? order.items.map(i => `<li>${i.quantity}x ${i.name}</li>`).join('')
         : '<li>Assorted order items</li>';
 
+      // Distinguish positive praise (4-5 stars) from delay complaints (1-3 stars)
+      const hasFeedback = order.rating || order.complaint;
+      const isPositive = order.rating >= 4;
+      const feedbackType = isPositive ? 'positive' : 'negative';
+      const feedbackLabel = isPositive ? '💬 Guest Comment' : '⚠️ Delay Complaint';
+      const badgeText = isPositive ? '💬 Comment' : '⚠️ Complaint';
+
+      // Check if order has been finalized (paid or customer has left)
+      const isFinalized = order.status === 'Paid' || order.customer_status === 'Left';
+
       const waiterOpts = (staffDirectory.waiters || []).map(w => `<option value="${w.id}" ${order.waiter_id === w.id ? 'selected' : ''}>${w.name}</option>`).join('');
       const chefOpts = (staffDirectory.chefs || []).map(c => `<option value="${c.id}" ${order.chef_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
       const barOpts = (staffDirectory.bartenders || []).map(b => `<option value="${b.id}" ${order.bartender_id === b.id ? 'selected' : ''}>${b.name}</option>`).join('');
@@ -437,7 +447,7 @@ async function loadWaiterOrders() {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <strong>Order #${order.id} (Seat ${order.seat_number})</strong>
           <div style="display: flex; align-items: center;">
-            ${order.complaint ? '<span class="complaint-badge">⚠️ Complaint</span>' : ''}
+            ${hasFeedback ? `<span class="feedback-badge ${feedbackType}">${badgeText}</span>` : ''}
             <span class="badge-status ${order.status.toLowerCase()}">${order.status}</span>
           </div>
         </div>
@@ -445,14 +455,14 @@ async function loadWaiterOrders() {
           Customer: <strong>${order.customer_name}</strong> • Dining Status: <strong>${order.customer_status || 'In'}</strong>
         </p>
 
-        <!-- Prominent Complaint / Delay Notification for Staff -->
-        ${order.rating || order.complaint ? `
-          <div class="waiter-complaint-alert">
+        <!-- Feedback Alert: Green for Compliments, Red for Delay Complaints -->
+        ${hasFeedback ? `
+          <div class="waiter-feedback-alert ${feedbackType}">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <strong>⚠️ Customer Delay Alert</strong>
+              <strong>${feedbackLabel}</strong>
               <span style="font-weight: 700;">⭐ ${order.rating || 'N/A'}/5</span>
             </div>
-            <p style="margin: 0; font-style: italic;">"${order.complaint || 'Customer reported a delay without additional comments.'}"</p>
+            <p style="margin: 0; font-style: italic;">"${order.complaint || 'No additional comment provided.'}"</p>
           </div>
         ` : ''}
         
@@ -460,34 +470,44 @@ async function loadWaiterOrders() {
           ${itemsList}
         </ul>
 
-        <form onsubmit="handleStaffAssignment(event, ${order.id})">
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div>
-              <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">ASSIGN WAITER</label>
-              <select id="w_waiter_${order.id}" required>
-                <option value="">Choose Waiter</option>
-                ${waiterOpts}
-              </select>
+        <!-- Only display dropdowns if the order is still active; if finalized, show completed summary -->
+        ${!isFinalized ? `
+          <form onsubmit="handleStaffAssignment(event, ${order.id})">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div>
+                <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">ASSIGN WAITER</label>
+                <select id="w_waiter_${order.id}" required>
+                  <option value="">Choose Waiter</option>
+                  ${waiterOpts}
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">PREPARING CHEF</label>
+                <select id="w_chef_${order.id}" required>
+                  <option value="">Choose Chef</option>
+                  ${chefOpts}
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">PREPARING BARTENDER</label>
+                <select id="w_bar_${order.id}" required>
+                  <option value="">Choose Bartender</option>
+                  ${barOpts}
+                </select>
+              </div>
             </div>
-            <div>
-              <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">PREPARING CHEF</label>
-              <select id="w_chef_${order.id}" required>
-                <option value="">Choose Chef</option>
-                ${chefOpts}
-              </select>
-            </div>
-            <div>
-              <label style="font-size: 0.72rem; font-weight: 700; color: #64748b;">PREPARING BARTENDER</label>
-              <select id="w_bar_${order.id}" required>
-                <option value="">Choose Bartender</option>
-                ${barOpts}
-              </select>
-            </div>
+            <button type="submit" class="btn-primary full-btn" style="margin-top: 12px;">
+              Save Staff & Mark as Served
+            </button>
+          </form>
+        ` : `
+          <div class="completed-staff-summary">
+            <div><strong>Served By:</strong> ${order.waiter_name || 'Staff'}</div>
+            <div><strong>Chef:</strong> ${order.chef_name || 'Kitchen Desk'}</div>
+            <div><strong>Bartender:</strong> ${order.bartender_name || 'Bar Station'}</div>
+            <div class="order-closed-tag">✅ Order Paid & Table Closed</div>
           </div>
-          <button type="submit" class="btn-primary full-btn" style="margin-top: 12px;">
-            Save Staff & Mark as Served
-          </button>
-        </form>
+        `}
       `;
       container.appendChild(card);
     });

@@ -914,25 +914,66 @@ input:focus, select:focus, textarea:focus {
   transform: rotate(-2deg);
 }
 
-/* Waiter Station Complaint & Delay Alerts */
-.waiter-complaint-alert {
-  background: #fff1f2;
-  border: 1px solid #fecdd3;
-  border-left: 4px solid #e11d48;
+/* Feedback Alerts (Green for Compliments/Comments, Red for Complaints) */
+.waiter-feedback-alert {
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.85rem;
   margin-bottom: 0.85rem;
   font-size: 0.82rem;
+}
+
+.waiter-feedback-alert.positive {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-left: 4px solid #16a34a;
+  color: #166534;
+}
+
+.waiter-feedback-alert.negative {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-left: 4px solid #e11d48;
   color: #9f1239;
 }
 
-.complaint-badge {
-  background: #fee2e2;
-  color: #991b1b;
+.feedback-badge {
   font-size: 0.68rem;
   font-weight: 800;
   padding: 2px 8px;
   border-radius: 4px;
   text-transform: uppercase;
   margin-right: 6px;
+}
+
+.feedback-badge.positive {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.feedback-badge.negative {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Completed Order Summary (Replaces dropdowns when paid & customer has left) */
+.completed-staff-summary {
+  background: var(--surface-subtle);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.83rem;
+  color: var(--text-dark);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-closed-tag {
+  margin-top: 6px;
+  color: #15803d;
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
