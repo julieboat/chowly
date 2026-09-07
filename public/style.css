@@ -913,3 +913,26 @@ input:focus, select:focus, textarea:focus {
   margin-top: 12px;
   transform: rotate(-2deg);
 }
+
+/* Waiter Station Complaint & Delay Alerts */
+.waiter-complaint-alert {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  border-left: 4px solid #e11d48;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.82rem;
+  color: #9f1239;
+}
+
+.complaint-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  margin-right: 6px;
+}

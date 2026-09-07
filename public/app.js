@@ -407,7 +407,7 @@ async function loadCustomerOrders() {
   }
 }
 
-// Waiter Orders Queue
+// Waiter Orders Queue (Full visibility for restaurant staff)
 async function loadWaiterOrders() {
   const container = document.getElementById('waiterOrdersQueue');
   if (!container) return;
@@ -436,9 +436,25 @@ async function loadWaiterOrders() {
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <strong>Order #${order.id} (Seat ${order.seat_number})</strong>
-          <span class="badge-status ${order.status.toLowerCase()}">${order.status}</span>
+          <div style="display: flex; align-items: center;">
+            ${order.complaint ? '<span class="complaint-badge">⚠️ Complaint</span>' : ''}
+            <span class="badge-status ${order.status.toLowerCase()}">${order.status}</span>
+          </div>
         </div>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">Customer: <strong>${order.customer_name}</strong> • Dining Status: <strong>${order.customer_status || 'In'}</strong></p>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 8px;">
+          Customer: <strong>${order.customer_name}</strong> • Dining Status: <strong>${order.customer_status || 'In'}</strong>
+        </p>
+
+        <!-- Prominent Complaint / Delay Notification for Staff -->
+        ${order.rating || order.complaint ? `
+          <div class="waiter-complaint-alert">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <strong>⚠️ Customer Delay Alert</strong>
+              <span style="font-weight: 700;">⭐ ${order.rating || 'N/A'}/5</span>
+            </div>
+            <p style="margin: 0; font-style: italic;">"${order.complaint || 'Customer reported a delay without additional comments.'}"</p>
+          </div>
+        ` : ''}
         
         <ul style="font-size: 0.85rem; padding-left: 1.2rem; margin-bottom: 12px; color: #334155;">
           ${itemsList}
